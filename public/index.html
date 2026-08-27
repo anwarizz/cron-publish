@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Publish.</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: {
+              mono: [
+                "ui-monospace",
+                "SFMono-Regular",
+                "Menlo",
+                "Monaco",
+                "Consolas",
+                "monospace",
+              ],
+            },
+            colors: {
+              DarkBg: "#111111",
+              DarkInput: "#1a1a1a",
+              ghLightBg: "#f6f8fa",
+              ghLightInput: "#ffffff",
+              Orange: "#f16436",
+              OrangeHover: "#e05325",
+            },
+          },
+        },
+      };
+    </script>
+  </head>
+
+  <body
+    class="font-mono min-h-screen transition-colors duration-200 bg-ghLightBg text-gray-900 dark:bg-DarkBg dark:text-gray-100 pb-12"
+  >
+    <!-- Navbar -->
+    <header class="w-full py-4 px-6 flex justify-between items-center mt-5">
+      <div class="w-8"></div>
+      <nav class="flex space-x-2">
+        <button
+          id="navFormBtn"
+          onclick="switchPage('form')"
+          class="px-4 py-1.5 text-xs font-semibold rounded-md bg-Orange text-white"
+        >
+          Push Form
+        </button>
+        <button
+          id="navStatusBtn"
+          onclick="switchPage('status')"
+          class="px-4 py-1.5 text-xs font-semibold rounded-md opacity-70 hover:opacity-100 transition"
+        >
+          Queue Status
+        </button>
+      </nav>
+      <button
+        id="themeToggle"
+        class="p-2 rounded-md bg-gray-200 dark:bg-DarkInput text-xs focus:outline-none"
+      >
+        Light.
+      </button>
+    </header>
+
+    <main class="max-w-xl mx-auto px-4 mt-6">
+      <!-- PAGE 1: PUSH FORM -->
+      <section id="pageForm" class="block">
+        <div class="p-4 pt-2">
+          <form id="pushForm" class="space-y-4">
+            <div>
+              <label class="block text-xs font-medium mb-1 opacity-80"
+                >CURSEFORGE API TOKEN</label
+              >
+              <input
+                type="password"
+                id="token"
+                required
+                class="w-full bg-ghLightInput dark:bg-DarkInput rounded p-2.5 text-xs border border-gray-300 dark:border-gray-700 outline-none focus:border-Orange"
+              />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium mb-1 opacity-80"
+                  >PROJECT ID</label
+                >
+                <input
+                  type="text"
+                  id="projectId"
+                  required
+                  class="w-full bg-ghLightInput dark:bg-DarkInput rounded p-2.5 text-xs border border-gray-300 dark:border-gray-700 outline-none focus:border-Orange"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-medium mb-1 opacity-80"
+                  >DISPLAY NAME</label
+                >
+                <input
+                  type="text"
+                  id="projectName"
+                  class="w-full bg-ghLightInput dark:bg-DarkInput rounded p-2.5 text-xs border border-gray-300 dark:border-gray-700 outline-none focus:border-Orange"
+                />
+              </div>
+            </div>
+
+            <!-- Custom File Input Addon -->
+            <div>
+              <label class="block text-xs font-medium mb-1 opacity-80"
+                >ADDON FILE (.mcaddon / .mcpack)</label
+              >
+              <div
+                class="flex items-center space-x-3 bg-ghLightInput dark:bg-DarkInput rounded p-2 border border-gray-300 dark:border-gray-700"
+              >
+                <label
+                  for="fileInput"
+                  class="px-3 py-1.5 bg-gray-700 hover:bg-OrangeHover text-white text-xs font-bold rounded cursor-pointer transition shrink-0"
+                >
+                  Select File
+                </label>
+                <span id="fileNameDisplay" class="text-xs opacity-60 truncate"
+                  >No file chosen (.mcaddon, .mcpack)</span
+                >
+                <input
+                  type="file"
+                  id="fileInput"
+                  accept=".mcaddon,.mcpack,.zip"
+                  required
+                  class="hidden"
+                  onchange="updateFileName(this)"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-medium mb-1 opacity-80"
+                  >GAME VERSION</label
+                >
+                <input
+                  type="text"
+                  id="gameVersion"
+                  placeholder="26.40"
+                  required
+                  class="w-full bg-ghLightInput dark:bg-DarkInput rounded p-2.5 text-xs border border-gray-300 dark:border-gray-700 outline-none focus:border-Orange"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-medium mb-1 opacity-80"
+                  >RELEASE TYPE</label
+                >
+                <select
+                  id="releaseType"
+                  class="w-full bg-ghLightInput dark:bg-DarkInput rounded p-2.5 text-xs border border-gray-300 dark:border-gray-700 outline-none focus:border-Orange"
+                >
+                  <option value="release">Release</option>
+                  <option value="beta">Beta</option>
+                  <option value="alpha">Alpha</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Section Schedule & Timezone -->
+            <div class="grid grid-cols-3 gap-3">
+              <div class="col-span-2">
+                <label class="block text-xs font-medium mb-1 opacity-80"
+                  >SCHEDULE TIME (LEAVE BLANK FOR INSTANT)</label
+                >
+                <input
+                  type="datetime-local"
+                  id="scheduledTimestamp"
+                  class="w-full bg-ghLightInput dark:bg-DarkInput rounded p-2.5 text-xs border border-gray-300 dark:border-gray-700 outline-none focus:border-Orange"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-medium mb-1 opacity-80"
+                  >TIMEZONE</label
+                >
+                <select
+                  id="timezone"
+                  class="w-full bg-ghLightInput dark:bg-DarkInput rounded p-2.5 text-xs border border-gray-300 dark:border-gray-700 outline-none focus:border-Orange"
+                >
+                  <option value="+08:00">WITA (UTC+8)</option>
+                  <option value="+07:00">WIB (UTC+7)</option>
+                  <option value="+09:00">WIT / JST (UTC+9)</option>
+                  <option value="+00:00">UTC (UTC+0)</option>
+                  <option value="-05:00">EST / New York (UTC-5)</option>
+                  <option value="-08:00">PST / Los Angeles (UTC-8)</option>
+                  <option value="+01:00">BST / London (UTC+1)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Section Changelog -->
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <label class="block text-xs font-medium opacity-80"
+                  >CHANGELOG</label
+                >
+                <div class="flex space-x-3 text-[11px] opacity-80">
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      name="changelogMode"
+                      value="text"
+                      onchange="toggleChangelogMode('text')"
+                      class="accent-Orange"
+                    />
+                    <span class="ml-1">Text</span>
+                  </label>
+                  <label class="inline-flex items-center cursor-pointer">
+                    <input
+                      type="radio"
+                      name="changelogMode"
+                      value="file"
+                      checked
+                      onchange="toggleChangelogMode('file')"
+                      class="accent-Orange"
+                    />
+                    <span class="ml-1">Upload .md</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Input Mode Text -->
+              <div id="changelogTextContainer" class="hidden">
+                <textarea
+                  id="changelog"
+                  rows="3"
+                  class="w-full bg-ghLightInput dark:bg-DarkInput rounded p-2.5 text-xs border border-gray-300 dark:border-gray-700 outline-none focus:border-Orange"
+                  placeholder="Enter changelog details here..."
+                ></textarea>
+              </div>
+
+              <!-- Input Mode File Markdown -->
+              <div id="changelogFileContainer">
+                <div
+                  class="flex items-center space-x-3 bg-ghLightInput dark:bg-DarkInput rounded p-2 border border-gray-300 dark:border-gray-700"
+                >
+                  <label
+                    for="mdFileInput"
+                    class="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold rounded cursor-pointer transition shrink-0"
+                  >
+                    Choose .md File
+                  </label>
+                  <span
+                    id="mdFileNameDisplay"
+                    class="text-xs opacity-60 truncate"
+                    >No .md file chosen</span
+                  >
+                  <input
+                    type="file"
+                    id="mdFileInput"
+                    accept=".md,.txt"
+                    class="hidden"
+                    onchange="readMdFile(this)"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              class="w-full py-2.5 bg-Orange hover:bg-OrangeHover text-white font-bold text-xs rounded transition duration-150 shadow-md"
+            >
+              SCHEDULE PUSH
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- PAGE 2: QUEUE STATUS -->
+      <section id="pageStatus" class="hidden max-w-2xl mx-auto">
+        <div class="flex justify-between items-center mb-6 px-2">
+          <h2 class="text-xs font-bold tracking-wider opacity-80">
+            QUEUE STATUS
+          </h2>
+          <button
+            onclick="fetchStatus()"
+            class="px-3 py-1 bg-ghLightInput dark:bg-DarkInput border border-gray-300 dark:border-gray-700 text-xs rounded opacity-80 hover:opacity-100"
+          >
+            Refresh
+          </button>
+        </div>
+
+        <div id="statusList" class="space-y-3">
+          <div class="p-4 text-center text-xs opacity-50">Loading data...</div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      let countdownTimerInterval = null;
+
+      // Theme Toggle Logic
+      const themeToggleBtn = document.getElementById("themeToggle");
+      const initTheme = () => {
+        if (localStorage.theme === "dark") {
+          document.documentElement.classList.add("dark");
+          themeToggleBtn.innerText = "Dark.";
+        } else {
+          document.documentElement.classList.remove("dark");
+          themeToggleBtn.innerText = "Light.";
+        }
+      };
+      themeToggleBtn.addEventListener("click", () => {
+        document.documentElement.classList.toggle("dark");
+        localStorage.theme = document.documentElement.classList.contains("dark")
+          ? "dark"
+          : "light";
+        themeToggleBtn.innerText = document.documentElement.classList.contains(
+          "dark",
+        )
+          ? "Dark."
+          : "Light.";
+      });
+      initTheme();
+
+      let mdFileContent = "";
+
+      function updateFileName(input) {
+        const display = document.getElementById("fileNameDisplay");
+        if (input.files && input.files[0]) {
+          display.innerText = input.files[0].name;
+          display.classList.remove("opacity-60");
+        } else {
+          display.innerText = "No file chosen (.mcaddon, .mcpack)";
+          display.classList.add("opacity-60");
+        }
+      }
+
+      function toggleChangelogMode(mode) {
+        const textContainer = document.getElementById("changelogTextContainer");
+        const fileContainer = document.getElementById("changelogFileContainer");
+
+        if (mode === "text") {
+          textContainer.classList.remove("hidden");
+          fileContainer.classList.add("hidden");
+        } else {
+          textContainer.classList.add("hidden");
+          fileContainer.classList.remove("hidden");
+        }
+      }
+
+      function readMdFile(input) {
+        const display = document.getElementById("mdFileNameDisplay");
+        if (input.files && input.files[0]) {
+          const file = input.files[0];
+          display.innerText = file.name;
+          display.classList.remove("opacity-60");
+
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            mdFileContent = e.target.result;
+          };
+          reader.readAsText(file);
+        } else {
+          display.innerText = "No .md file chosen";
+          display.classList.add("opacity-60");
+          mdFileContent = "";
+        }
+      }
+
+      function switchPage(page) {
+        const formSec = document.getElementById("pageForm");
+        const statusSec = document.getElementById("pageStatus");
+        const formBtn = document.getElementById("navFormBtn");
+        const statusBtn = document.getElementById("navStatusBtn");
+
+        if (page === "form") {
+          formSec.classList.remove("hidden");
+          statusSec.classList.add("hidden");
+          if (countdownTimerInterval) clearInterval(countdownTimerInterval);
+
+          formBtn.className =
+            "px-4 py-1.5 text-xs font-semibold rounded-md bg-Orange text-white";
+          statusBtn.className =
+            "px-4 py-1.5 text-xs font-semibold rounded-md opacity-70 hover:opacity-100 transition";
+        } else {
+          formSec.classList.add("hidden");
+          statusSec.classList.remove("hidden");
+
+          statusBtn.className =
+            "px-4 py-1.5 text-xs font-semibold rounded-md bg-Orange text-white";
+          formBtn.className =
+            "px-4 py-1.5 text-xs font-semibold rounded-md opacity-70 hover:opacity-100 transition";
+
+          fetchStatus();
+        }
+      }
+
+      document.getElementById("token").value =
+        localStorage.getItem("cf_token") || "";
+      document.getElementById("projectId").value =
+        localStorage.getItem("cf_project_id") || "";
+
+      // Handle Form Submit
+      document
+        .getElementById("pushForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const submitBtn = e.target.querySelector("button[type='submit']");
+          const originalBtnText = submitBtn.innerText;
+
+          const token = document.getElementById("token").value;
+          const projectId = document.getElementById("projectId").value;
+          localStorage.setItem("cf_token", token);
+          localStorage.setItem("cf_project_id", projectId);
+
+          const formData = new FormData();
+          formData.append("token", token);
+          formData.append("projectId", projectId);
+          formData.append(
+            "projectName",
+            document.getElementById("projectName").value,
+          );
+          formData.append(
+            "file",
+            document.getElementById("fileInput").files[0],
+          );
+          formData.append(
+            "gameVersion",
+            document.getElementById("gameVersion").value,
+          );
+          formData.append(
+            "releaseType",
+            document.getElementById("releaseType").value,
+          );
+
+          const changelogMode = document.querySelector(
+            'input[name="changelogMode"]:checked',
+          ).value;
+          let finalChangelog = "";
+
+          if (changelogMode === "text") {
+            finalChangelog = document.getElementById("changelog").value;
+          } else {
+            finalChangelog = mdFileContent;
+          }
+          formData.append("changelog", finalChangelog);
+
+          const rawTimestamp =
+            document.getElementById("scheduledTimestamp").value;
+          const selectedTz = document.getElementById("timezone").value;
+
+          if (rawTimestamp) {
+            const isoStringWithOffset = `${rawTimestamp}:00${selectedTz}`;
+            formData.append("scheduledTimestamp", isoStringWithOffset);
+            formData.append("isInstant", "false");
+          } else {
+            formData.append("isInstant", "true");
+          }
+
+          submitBtn.disabled = true;
+          submitBtn.innerText = "UPLOADING...";
+
+          try {
+            const response = await fetch("/api/schedule-push", {
+              method: "POST",
+              body: formData,
+            });
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+              switchPage("status");
+            } else {
+              throw new Error(result.error || "Failed to process.");
+            }
+          } catch (error) {
+            alert(`Error: ${error.message}`);
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerText = originalBtnText;
+          }
+        });
+
+      async function fetchStatus() {
+        const container = document.getElementById("statusList");
+        try {
+          const res = await fetch("/api/get-status");
+          const json = await res.json();
+
+          if (!res.ok) throw new Error(json.error);
+          if (!json.data || json.data.length === 0) {
+            container.innerHTML = `<div class="p-4 text-center text-xs opacity-50 border border-gray-300 dark:border-gray-700 rounded">No queue items found.</div>`;
+            if (countdownTimerInterval) clearInterval(countdownTimerInterval);
+            return;
+          }
+
+          renderList(json.data);
+          startCountdownLoop();
+        } catch (err) {
+          container.innerHTML = `<div class="p-4 text-center text-xs text-red-500 border border-gray-300 dark:border-gray-700 rounded">Failed to load: ${err.message}</div>`;
+        }
+      }
+
+      function formatScheduleTime(rawTime, isInstant) {
+        if (isInstant || !rawTime) return "Instant Push";
+
+        const isoString = rawTime.replace(" ", "T");
+        const dateObj = new Date(isoString);
+
+        if (isNaN(dateObj.getTime())) return "Instant Push";
+
+        const day = String(dateObj.getDate()).padStart(2, "0");
+        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+        const year = dateObj.getFullYear();
+        const hours = String(dateObj.getHours()).padStart(2, "0");
+        const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+
+        const offsetMinutes = -dateObj.getTimezoneOffset();
+        const offsetHours = Math.floor(Math.abs(offsetMinutes) / 60);
+        const sign = offsetMinutes >= 0 ? "+" : "-";
+        const tzString = `UTC${sign}${offsetHours}`;
+
+        return `${day}/${month}/${year}, ${hours}:${minutes} (${tzString})`;
+      }
+
+      function renderList(items) {
+        const container = document.getElementById("statusList");
+
+        container.innerHTML = items
+          .map((item) => {
+            const fileDisplay = item.file_name || "Addon File";
+            const projName = item.project_name
+              ? `${item.project_name} (#${item.project_id})`
+              : `#${item.project_id}`;
+
+            let actionBtn = "";
+            if (item.status === "PENDING") {
+              actionBtn = `<button onclick="handleCancel('${item.id}')" class="px-2 py-1 bg-red-800 hover:bg-red-700 text-white text-[10px] rounded">CANCEL</button>`;
+            } else if (
+              item.status === "COMPLETED" ||
+              item.status === "FAILED"
+            ) {
+              actionBtn = `<button onclick="handleDeleteHistory('${item.id}')" class="px-2 py-1 bg-gray-700 hover:bg-gray-600 text-white text-[10px] rounded">DELETE</button>`;
+            }
+
+            const rawTime = item.scheduled_at || item.scheduledTimestamp;
+            const isInstant = item.is_instant || item.isInstant;
+            const scheduleDisplay = formatScheduleTime(rawTime, isInstant);
+
+            return `
+      <div class="p-4 bg-ghLightInput dark:bg-DarkInput rounded border border-gray-300 dark:border-gray-700 space-y-2">
+        <div class="flex justify-between items-start">
+          <div>
+            <span class="text-[10px] opacity-60 font-bold">${projName}</span>
+            <h3 class="text-xs font-bold">${fileDisplay}</h3>
+          </div>
+          <div class="flex items-center space-x-2">
+            <span class="text-[10px] px-2 py-0.5 rounded font-bold ${getStatusStyle(item.status)}">${item.status}</span>
+            ${actionBtn}
+          </div>
+        </div>
+
+        <div class="flex justify-between items-center text-[11px] opacity-75 pt-1">
+          <div>v${item.game_version} (${item.release_type})</div>
+          <div class="font-bold text-Orange flex items-center space-x-2">
+            <span>${scheduleDisplay}</span>
+            ${
+              item.status === "PENDING" && !isInstant && rawTime
+                ? `<span data-target-time="${rawTime}" class="countdown-badge text-[10px] bg-Orange/10 border border-Orange/30 text-Orange px-1.5 py-0.5 rounded ml-1 font-mono">Calculating...</span>`
+                : ""
+            }
+          </div>
+        </div>
+
+        ${item.error ? `<div class="p-2 bg-red-950/20 text-red-400 text-[10px] rounded border border-red-900/40 break-all">Error: ${item.error}</div>` : ""}
+      </div>
+    `;
+          })
+          .join("");
+      }
+
+      function startCountdownLoop() {
+        if (countdownTimerInterval) clearInterval(countdownTimerInterval);
+
+        const updateAllBadges = () => {
+          const badges = document.querySelectorAll(".countdown-badge");
+          if (badges.length === 0) return;
+
+          badges.forEach((badge) => {
+            let rawTarget = badge.getAttribute("data-target-time");
+            if (!rawTarget) return;
+
+            let formattedIso = rawTarget.trim().replace(" ", "T");
+
+            formattedIso = formattedIso.replace(/([+-]\d{2})(\d{2})$/, "$1:$2");
+
+            const targetDate = new Date(formattedIso);
+            const targetTime = targetDate.getTime();
+
+            if (isNaN(targetTime)) {
+              console.error("Invalid target date:", rawTarget);
+              badge.innerText = "Invalid Time";
+              return;
+            }
+
+            const now = Date.now();
+            const diff = targetTime - now;
+
+            if (diff <= 0) {
+              badge.innerText = "Waiting...";
+              badge.className =
+                "countdown-badge text-[10px] bg-blue-500/10 border border-blue-500/30 text-blue-400 px-1.5 py-0.5 rounded ml-1 font-mono animate-pulse";
+            } else {
+              const hours = Math.floor(diff / (1000 * 60 * 60));
+              const minutes = Math.floor(
+                (diff % (1000 * 60 * 60)) / (1000 * 60),
+              );
+              const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+              const parts = [];
+              if (hours > 0) parts.push(`${hours}h`);
+              parts.push(`${String(minutes).padStart(2, "0")}m`);
+              parts.push(`${String(seconds).padStart(2, "0")}s`);
+
+              badge.innerText = `(${parts.join(" ")})`;
+            }
+          });
+        };
+
+        updateAllBadges();
+        countdownTimerInterval = setInterval(updateAllBadges, 1000);
+      }
+
+      function getStatusStyle(status) {
+        switch (status) {
+          case "COMPLETED":
+            return "bg-emerald-950/40 text-emerald-400";
+          case "PROCESSING":
+            return "bg-blue-950/40 text-blue-400 animate-pulse";
+          case "FAILED":
+            return "bg-red-950/40 text-red-400";
+          default:
+            return "bg-amber-950/40 text-amber-400";
+        }
+      }
+
+      async function handleCancel(id) {
+        const pwd = prompt("Enter passphrase to cancel this schedule:");
+        if (pwd === null) return;
+
+        try {
+          const res = await fetch("/api/delete-status", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id, action: "CANCEL", password: pwd }),
+          });
+          const json = await res.json();
+
+          if (res.ok && json.success) {
+            alert("✅ " + json.message);
+            fetchStatus();
+          } else {
+            alert("❌ " + (json.error || "Failed to cancel."));
+          }
+        } catch (err) {
+          alert("Error: " + err.message);
+        }
+      }
+
+      async function handleDeleteHistory(id) {
+        if (!confirm("Delete this log entry?")) return;
+
+        try {
+          const res = await fetch("/api/delete-status", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id, action: "DELETE_HISTORY" }),
+          });
+          const json = await res.json();
+
+          if (res.ok && json.success) {
+            fetchStatus();
+          } else {
+            alert("❌ " + (json.error || "Failed to delete log."));
+          }
+        } catch (err) {
+          alert("Error: " + err.message);
+        }
+      }
+    </script>
+  </body>
+</html>
